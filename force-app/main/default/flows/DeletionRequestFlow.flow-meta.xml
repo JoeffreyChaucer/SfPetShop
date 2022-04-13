@@ -1,31 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>54.0</apiVersion>
-    <decisions>
-        <name>Deletion</name>
-        <label>Deletion</label>
-        <locationX>182</locationX>
-        <locationY>278</locationY>
-        <defaultConnector>
-            <targetReference>getUserAdminProfile</targetReference>
-        </defaultConnector>
-        <defaultConnectorLabel>Deletion</defaultConnectorLabel>
-        <rules>
-            <name>Check_for_Null</name>
-            <conditionLogic>and</conditionLogic>
-            <conditions>
-                <leftValueReference>GetCurrentRecord.Id</leftValueReference>
-                <operator>IsNull</operator>
-                <rightValue>
-                    <booleanValue>false</booleanValue>
-                </rightValue>
-            </conditions>
-            <connector>
-                <targetReference>DeletionRequest</targetReference>
-            </connector>
-            <label>Check for Null</label>
-        </rules>
-    </decisions>
     <description>This flow with delete a record.</description>
     <interviewLabel>Deletion Flow {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Deletion Request Flow</label>
@@ -52,8 +27,8 @@
         <description>Send the deletion Task to the admin</description>
         <name>Task</name>
         <label>Task</label>
-        <locationX>314</locationX>
-        <locationY>638</locationY>
+        <locationX>176</locationX>
+        <locationY>518</locationY>
         <connector>
             <targetReference>DeletionRequestSent</targetReference>
         </connector>
@@ -78,7 +53,7 @@
         <inputAssignments>
             <field>WhatId</field>
             <value>
-                <elementReference>$Flow.CurrentRecord</elementReference>
+                <elementReference>getCurrentRecordId</elementReference>
             </value>
         </inputAssignments>
         <object>Task</object>
@@ -88,8 +63,8 @@
         <description>Get Admin Id</description>
         <name>getAdmin</name>
         <label>getAdmin</label>
-        <locationX>314</locationX>
-        <locationY>518</locationY>
+        <locationX>176</locationX>
+        <locationY>398</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Task</targetReference>
@@ -110,12 +85,15 @@
         <description>Get the current animal record</description>
         <name>GetCurrentRecord</name>
         <label>GetCurrentRecord</label>
-        <locationX>182</locationX>
+        <locationX>176</locationX>
         <locationY>158</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Deletion</targetReference>
+            <targetReference>getUserAdminProfile</targetReference>
         </connector>
+        <faultConnector>
+            <targetReference>DeletionRequest</targetReference>
+        </faultConnector>
         <filterLogic>and</filterLogic>
         <filters>
             <field>Id</field>
@@ -131,8 +109,8 @@
     <recordLookups>
         <name>getUserAdminProfile</name>
         <label>getUserAdminProfile</label>
-        <locationX>314</locationX>
-        <locationY>398</locationY>
+        <locationX>176</locationX>
+        <locationY>278</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>getAdmin</targetReference>
@@ -149,17 +127,39 @@
         <object>Profile</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
+    <recordUpdates>
+        <description>Update the Deletion status to Mark for Deletion</description>
+        <name>UpdateDeletionStatus</name>
+        <label>Update Deletion Status</label>
+        <locationX>176</locationX>
+        <locationY>758</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>DeletionStatus__c</field>
+            <operator>NotEqualTo</operator>
+            <value>
+                <stringValue>Mark for Deletion</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>DeletionStatus__c</field>
+            <value>
+                <stringValue>Mark for Deletion</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Animal__c</object>
+    </recordUpdates>
     <screens>
         <description>Display deletion request error</description>
         <name>DeletionRequest</name>
         <label>Deletion Request</label>
-        <locationX>50</locationX>
-        <locationY>398</locationY>
+        <locationX>440</locationX>
+        <locationY>278</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
         <fields>
-            <name>DeletionFailed</name>
+            <name>DeletionFailed_0</name>
             <fieldText>&lt;p&gt;An error occurred during Deletion request!!&lt;/p&gt;&lt;p&gt;{$Flow.FaultMessage}&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
@@ -170,13 +170,16 @@
         <description>Deletion Request has been sent to the admin.</description>
         <name>DeletionRequestSent</name>
         <label>Deletion Request Sent</label>
-        <locationX>314</locationX>
-        <locationY>758</locationY>
+        <locationX>176</locationX>
+        <locationY>638</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
+        <connector>
+            <targetReference>UpdateDeletionStatus</targetReference>
+        </connector>
         <fields>
-            <name>DeletionRequestSentSuccess</name>
+            <name>DeletionRequestSentSuccess_0</name>
             <fieldText>&lt;p&gt;Successfully sent deletion request!&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
@@ -184,7 +187,7 @@
         <showHeader>true</showHeader>
     </screens>
     <start>
-        <locationX>56</locationX>
+        <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
             <targetReference>GetCurrentRecord</targetReference>
