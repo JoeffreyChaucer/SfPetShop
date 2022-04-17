@@ -7,6 +7,16 @@
     <description>Users are only allowed to read Animal information.</description>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Adoption__c.AdoptionDate__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Adoption__c.Animal__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Animal__c.Adopted__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -48,9 +58,22 @@
         <allowEdit>false</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
+        <object>Adoption__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
         <object>Animal__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
+    <tabSettings>
+        <tab>Adoption__c</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
     <tabSettings>
         <tab>Animal__c</tab>
         <visibility>Visible</visibility>
