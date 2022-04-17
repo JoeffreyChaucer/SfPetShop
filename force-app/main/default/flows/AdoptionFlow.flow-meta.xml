@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>54.0</apiVersion>
+    <decisions>
+        <name>Route</name>
+        <label>Route</label>
+        <locationX>446</locationX>
+        <locationY>398</locationY>
+        <defaultConnector>
+            <targetReference>UpdateAdoptionStatus</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Adopted</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>GetCurrentAnimalRecord.Adopted__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>ErrorScreenAdopted</targetReference>
+            </connector>
+            <label>Adopted</label>
+        </rules>
+        <rules>
+            <name>Dead</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>GetCurrentAnimalRecord.DeathDate__c</leftValueReference>
+                <operator>GreaterThan</operator>
+                <rightValue>
+                    <elementReference>$Flow.CurrentDate</elementReference>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>ErrorScreenDead</targetReference>
+            </connector>
+            <label>Dead</label>
+        </rules>
+        <rules>
+            <name>MarkedForDeletion</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>GetCurrentAnimalRecord.MakForDeletion__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>ErrorScreenDeletion</targetReference>
+            </connector>
+            <label>Marked For Deletion</label>
+        </rules>
+    </decisions>
+    <description>Adoption Flow</description>
+    <interviewLabel>Adoption Flow {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Adoption Flow</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordLookups>
+        <description>Get the current record</description>
+        <name>GetCurrentAnimalRecord</name>
+        <label>Get Current Animal Record</label>
+        <locationX>446</locationX>
+        <locationY>278</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Route</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Animal__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <description>Update the adoption checkbox to true.</description>
+        <name>UpdateAdoptionStatus</name>
+        <label>Update Adoption Status</label>
+        <locationX>842</locationX>
+        <locationY>518</locationY>
+        <connector>
+            <targetReference>SubflowCreateAdoptionRecord</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Adopted__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <object>Animal__c</object>
+    </recordUpdates>
+    <screens>
+        <name>ConfirmationScreen</name>
+        <label>Confirmation Screen</label>
+        <locationX>446</locationX>
+        <locationY>158</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <backButtonLabel>Cancel</backButtonLabel>
+        <connector>
+            <targetReference>GetCurrentAnimalRecord</targetReference>
+        </connector>
+        <fields>
+            <name>ConfirmationScreenDescription</name>
+            <fieldText>&lt;p&gt;Are you sure you want to adopt this animal?&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <nextOrFinishButtonLabel>Yes</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>ErrorScreenAdopted</name>
+        <label>Error Screen</label>
+        <locationX>50</locationX>
+        <locationY>518</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>ErrorScreenDescriptionForAdopted</name>
+            <fieldText>&lt;p&gt;Cannot adopt an animal that has already been adopted.&lt;/p&gt;&lt;p&gt;{!$Flow.FaultMessage}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>ErrorScreenDead</name>
+        <label>Error Screen</label>
+        <locationX>314</locationX>
+        <locationY>518</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>ErrorScreenDescriptionForDead</name>
+            <fieldText>&lt;p&gt;Cannot adopt an animal that is already dead.&lt;/p&gt;&lt;p&gt;{!$Flow.FaultMessage}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>ErrorScreenDeletion</name>
+        <label>Error Screen</label>
+        <locationX>578</locationX>
+        <locationY>518</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>ErrorScreenDescriptionForDeletion</name>
+            <fieldText>&lt;p&gt;Cannot adopt an animal that has is &quot;marked for deletion&quot;.&lt;/p&gt;&lt;p&gt;{!$Flow.FaultMessage}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <start>
+        <locationX>320</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>ConfirmationScreen</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <subflows>
+        <name>SubflowCreateAdoptionRecord</name>
+        <label>Subflow Create Adoption Record</label>
+        <locationX>842</locationX>
+        <locationY>638</locationY>
+        <flowName>AdoptionRecord</flowName>
+        <inputAssignments>
+            <name>recordId</name>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </inputAssignments>
+    </subflows>
+    <variables>
+        <description>Get the record id</description>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

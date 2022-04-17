@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>54.0</apiVersion>
-    <description>This flow with delete a record.</description>
-    <interviewLabel>Deletion Flow {!$Flow.CurrentDateTime}</interviewLabel>
+    <description>This is the deletion request flow</description>
+    <formulas>
+        <description>Calculate The Due date of the task record</description>
+        <name>CalculateDueDate</name>
+        <dataType>DateTime</dataType>
+        <expression>DATETIMEVALUE({!$Flow.CurrentDateTime} + 3 )</expression>
+    </formulas>
+    <interviewLabel>Deletion Request Flow {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Deletion Request Flow</label>
     <processMetadataValues>
         <name>BuilderType</name>
@@ -24,163 +30,142 @@
     </processMetadataValues>
     <processType>Flow</processType>
     <recordCreates>
-        <description>Send the deletion Task to the admin</description>
-        <name>Task</name>
-        <label>Task</label>
+        <description>Create task record for the admin.</description>
+        <name>CreateTaskRecord</name>
+        <label>Create Task Record</label>
         <locationX>176</locationX>
-        <locationY>518</locationY>
+        <locationY>398</locationY>
         <connector>
-            <targetReference>DeletionRequestSent</targetReference>
+            <targetReference>UpdateMarkForDeletion</targetReference>
         </connector>
+        <faultConnector>
+            <targetReference>ErrorScreen</targetReference>
+        </faultConnector>
         <inputAssignments>
-            <field>OwnerId</field>
+            <field>ActivityDate</field>
             <value>
-                <elementReference>getAdmin.Id</elementReference>
+                <elementReference>CalculateDueDate</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>Priority</field>
+            <field>IsReminderSet</field>
             <value>
-                <stringValue>High</stringValue>
+                <booleanValue>true</booleanValue>
             </value>
         </inputAssignments>
         <inputAssignments>
             <field>Subject</field>
             <value>
-                <stringValue>Review Account Deletion Request</stringValue>
+                <stringValue>Review Record Deletion Request</stringValue>
             </value>
         </inputAssignments>
         <inputAssignments>
             <field>WhatId</field>
             <value>
-                <elementReference>getCurrentRecordId</elementReference>
+                <elementReference>recordId</elementReference>
             </value>
         </inputAssignments>
         <object>Task</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
     <recordLookups>
-        <description>Get Admin Id</description>
-        <name>getAdmin</name>
-        <label>getAdmin</label>
+        <description>Get the current animal record based on the current record Id.</description>
+        <name>GetCurrentAnimalRecord</name>
+        <label>Get Current Animal Record`</label>
         <locationX>176</locationX>
-        <locationY>398</locationY>
+        <locationY>278</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Task</targetReference>
+            <targetReference>CreateTaskRecord</targetReference>
         </connector>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>ProfileId</field>
-            <operator>EqualTo</operator>
-            <value>
-                <elementReference>getUserAdminProfile.Id</elementReference>
-            </value>
-        </filters>
-        <getFirstRecordOnly>true</getFirstRecordOnly>
-        <object>User</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordLookups>
-    <recordLookups>
-        <description>Get the current animal record</description>
-        <name>GetCurrentRecord</name>
-        <label>GetCurrentRecord</label>
-        <locationX>176</locationX>
-        <locationY>158</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
-        <connector>
-            <targetReference>getUserAdminProfile</targetReference>
-        </connector>
-        <faultConnector>
-            <targetReference>DeletionRequest</targetReference>
-        </faultConnector>
         <filterLogic>and</filterLogic>
         <filters>
             <field>Id</field>
             <operator>EqualTo</operator>
             <value>
-                <elementReference>$Flow.CurrentRecord</elementReference>
+                <elementReference>recordId</elementReference>
             </value>
         </filters>
         <getFirstRecordOnly>true</getFirstRecordOnly>
         <object>Animal__c</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
-    <recordLookups>
-        <name>getUserAdminProfile</name>
-        <label>getUserAdminProfile</label>
+    <recordUpdates>
+        <description>Update</description>
+        <name>UpdateMarkForDeletion</name>
+        <label>Update Mark For Deletion</label>
         <locationX>176</locationX>
-        <locationY>278</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <locationY>518</locationY>
         <connector>
-            <targetReference>getAdmin</targetReference>
+            <targetReference>SuccessScreen</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
-            <field>Name</field>
+            <field>Id</field>
             <operator>EqualTo</operator>
             <value>
-                <stringValue>System Administrator</stringValue>
-            </value>
-        </filters>
-        <getFirstRecordOnly>true</getFirstRecordOnly>
-        <object>Profile</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordLookups>
-    <recordUpdates>
-        <description>Update the Deletion status to Mark for Deletion</description>
-        <name>UpdateDeletionStatus</name>
-        <label>Update Deletion Status</label>
-        <locationX>176</locationX>
-        <locationY>758</locationY>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>DeletionStatus__c</field>
-            <operator>NotEqualTo</operator>
-            <value>
-                <stringValue>Mark for Deletion</stringValue>
+                <elementReference>recordId</elementReference>
             </value>
         </filters>
         <inputAssignments>
-            <field>DeletionStatus__c</field>
+            <field>MakForDeletion__c</field>
             <value>
-                <stringValue>Mark for Deletion</stringValue>
+                <booleanValue>true</booleanValue>
             </value>
         </inputAssignments>
         <object>Animal__c</object>
     </recordUpdates>
     <screens>
-        <description>Display deletion request error</description>
-        <name>DeletionRequest</name>
-        <label>Deletion Request</label>
+        <description>This is a confirmation screen.</description>
+        <name>ConfirmationScreen</name>
+        <label>ConfirmationScreen</label>
+        <locationX>176</locationX>
+        <locationY>158</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <backButtonLabel>Cancel</backButtonLabel>
+        <connector>
+            <targetReference>GetCurrentAnimalRecord</targetReference>
+        </connector>
+        <fields>
+            <name>ConfirmationScreenDescription</name>
+            <fieldText>&lt;p&gt;Are you sure you want to request a deletion for this record?&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <nextOrFinishButtonLabel>Yes</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <description>This is an Error Screen</description>
+        <name>ErrorScreen</name>
+        <label>Error Screen</label>
         <locationX>440</locationX>
-        <locationY>278</locationY>
+        <locationY>518</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
         <fields>
-            <name>DeletionFailed_0</name>
-            <fieldText>&lt;p&gt;An error occurred during Deletion request!!&lt;/p&gt;&lt;p&gt;{$Flow.FaultMessage}&lt;/p&gt;</fieldText>
+            <name>ErrorScreenDescription</name>
+            <fieldText>&lt;p&gt;An Error has occurred during Task record creation.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;{!$Flow.FaultMessage}&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <showFooter>true</showFooter>
         <showHeader>true</showHeader>
     </screens>
     <screens>
-        <description>Deletion Request has been sent to the admin.</description>
-        <name>DeletionRequestSent</name>
-        <label>Deletion Request Sent</label>
+        <description>This is a success screen</description>
+        <name>SuccessScreen</name>
+        <label>Success Screen</label>
         <locationX>176</locationX>
         <locationY>638</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
-        <connector>
-            <targetReference>UpdateDeletionStatus</targetReference>
-        </connector>
         <fields>
-            <name>DeletionRequestSentSuccess_0</name>
-            <fieldText>&lt;p&gt;Successfully sent deletion request!&lt;/p&gt;</fieldText>
+            <name>SuccessScreenDescription</name>
+            <fieldText>&lt;p&gt;Deletion request has been sent.&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <showFooter>true</showFooter>
@@ -190,22 +175,13 @@
         <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>GetCurrentRecord</targetReference>
+            <targetReference>ConfirmationScreen</targetReference>
         </connector>
     </start>
     <status>Active</status>
     <variables>
-        <name>getAdminProfile</name>
-        <dataType>String</dataType>
-        <isCollection>false</isCollection>
-        <isInput>false</isInput>
-        <isOutput>false</isOutput>
-        <value>
-            <stringValue>{!$Profile.Name} == System Administrator</stringValue>
-        </value>
-    </variables>
-    <variables>
-        <name>getCurrentRecordId</name>
+        <description>Get the current record Id.</description>
+        <name>recordId</name>
         <dataType>String</dataType>
         <isCollection>false</isCollection>
         <isInput>true</isInput>

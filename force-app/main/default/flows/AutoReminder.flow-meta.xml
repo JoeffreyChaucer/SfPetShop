@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>54.0</apiVersion>
+    <description>Auto set Task Reminder 1 day before due date</description>
+    <formulas>
+        <description>Calculate Reminder set the reminder 1 day before due date</description>
+        <name>CalculateReminder</name>
+        <dataType>DateTime</dataType>
+        <expression>DATETIMEVALUE({!$Record.ActivityDate -1})</expression>
+    </formulas>
+    <interviewLabel>Auto Reminder {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Auto Reminder</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <description>Set the task reminder</description>
+        <name>SetTaskReminder</name>
+        <label>Set Task Reminder</label>
+        <locationX>176</locationX>
+        <locationY>335</locationY>
+        <inputAssignments>
+            <field>IsReminderSet</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>ReminderDateTime</field>
+            <value>
+                <elementReference>CalculateReminder</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>SetTaskReminder</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Status</field>
+            <operator>NotEqualTo</operator>
+            <value>
+                <stringValue>Completed</stringValue>
+            </value>
+        </filters>
+        <object>Task</object>
+        <recordTriggerType>Create</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>
