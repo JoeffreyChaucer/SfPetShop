@@ -30,9 +30,16 @@
             <conditionLogic>and</conditionLogic>
             <conditions>
                 <leftValueReference>GetCurrentAnimalRecord.DeathDate__c</leftValueReference>
-                <operator>GreaterThan</operator>
+                <operator>LessThan</operator>
                 <rightValue>
                     <elementReference>$Flow.CurrentDate</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>GetCurrentAnimalRecord.DeathDate__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
                 </rightValue>
             </conditions>
             <connector>
